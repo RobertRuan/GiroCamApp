@@ -115,6 +115,77 @@ GLViewRenderer.onDrawFrame  →  3D 视角 = 手机拍摄视角（房间内漫�
 5. 转动手机，观察 3D 房间视角随摄像头方向同步；双指缩放调整 FOV；
    旋转屏幕切换横竖屏；右上角按钮切换前后摄
 
+## 新机器上手 / 跨机器开发
+
+本项目为纯源码仓库，**不含**任何机器相关配置（`local.properties`、`build/`、`.idea/`、
+`.gradle/`、`*.apk` 均已通过 `.gitignore` 排除），可直接克隆到任意机器继续开发。
+
+### 1. 拉取代码
+
+```bash
+git clone https://github.com/RobertRuan/GiroCamApp.git
+cd GiroCamApp
+
+# 提交署名：与新机器/另一台机器保持一致，避免历史中作者身份不一致
+git config user.name  "你的名字"
+git config user.email "你的邮箱"
+```
+
+### 2. 环境要求
+
+| 项 | 要求 |
+|----|------|
+| Android Studio | Hedgehog 及以上，建议最新稳定版 |
+| JDK | 17（使用 Android Studio 自带的 JBR 即可） |
+| Android SDK | Platform 34 + Build-Tools 34.x + Platform-Tools |
+| `local.properties` | **无需手工拷贝**，首次打开 Android Studio 会自动生成并指向本机 SDK 路径 |
+| 运行设备 | **必须真机**（`TYPE_ROTATION_VECTOR` 传感器，模拟器不支持），API ≥ 24 |
+
+### 3. 首次同步与构建的网络要求
+
+Gradle Wrapper（8.7）与全部构建脚本已入库，但首次 `Sync` / 构建会联网下载
+**Gradle 发行包 + AGP / CameraX / Compose 依赖**，需放行以下域名：
+
+- `services.gradle.org`（下载 Gradle 发行包）
+- `dl.google.com`、`repo.maven.apache.org`（依赖仓库）
+
+> 若需代理，**不要**把代理配置写进仓库根目录的 `gradle.properties`（提交后会污染其他
+> 机器）。请写入 `%USERPROFILE%\.gradle\gradle.properties`（或 `~/.gradle/gradle.properties`），
+> 或通过 `GRADLE_OPTS` 环境变量传入。
+
+命令行验证构建：
+
+```bash
+./gradlew assembleDebug      # Linux / macOS
+gradlew.bat assembleDebug    # Windows
+```
+
+### 4. 双机/多人协作的 Git 习惯
+
+1. **开工先 `git pull --rebase`，收工前 `git commit && git push`**——多台机器直接推
+   `main` 最容易产生分叉。
+2. 较大改动建议开分支：`git switch -c feature/xxx`，完成后再合并回 `main`。
+3. 换行符已由 `.gitattributes` 统一（`gradlew` 强制 LF、`*.bat` 强制 CRLF），
+   新机器上的 `core.autocrlf` 无需调整。
+4. 编码已由 `gradle.properties` 的 `-Dfile.encoding=UTF-8` 固定，中文注释/字符串不会乱码。
+5. 不要提交 Android Studio 自动生成的文件；也不要随意改动
+   `gradle/wrapper/gradle-wrapper.properties` 的 `distributionUrl`（会导致其他机器重新下载）。
+
+### 5. 开发上下文如何交接（重要）
+
+AI 助手的**对话历史保存在本机 IDE 的用户目录中，不随 Git 同步**。换机器后请以下列
+仓库内文件作为唯一的上下文来源：
+
+- `PLAN.md` — 完整功能需求
+- `README.md` — 本文件：架构、相机模型、数据流、坐标系约定、调参方法、已知限制
+
+换机器后的建议顺序：
+
+1. 让 AI 先读 `PLAN.md` 与 `README.md`，恢复需求与设计上下文；
+2. `git log --oneline` 查看已完成的提交；
+3. 构建并安装到真机，验证方向同步是否正确；
+4. 从"已知限制与后续扩展"中挑选下一项继续开发。
+
 ## 调参与扩展
 
 - **平滑系数**：`OrientationBridge` 的 `smoother` 参数 `alpha`（0.15 更跟手 / 0.35 更平滑）
