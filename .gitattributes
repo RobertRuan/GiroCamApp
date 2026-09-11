@@ -1,0 +1,13 @@
+# 统一换行符：文本文件入库用 LF，Windows 脚本用 CRLF，避免 gradlew 在 Unix 上出现 CRLF 问题
+* text=auto eol=lf
+
+gradlew        text eol=lf
+gradlew.bat    text eol=crlf
+*.bat          text eol=crlf
+
+# 二进制文件不做换行转换
+gradle-wrapper.jar binary
+*.jar   binary
+*.png   binary
+*.jpg   binary
+*.webp  binary
